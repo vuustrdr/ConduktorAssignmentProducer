@@ -30,8 +30,10 @@ public class PeopleTopicCreator {
 
         try (AdminClient client = AdminClient.create(props)) {
 
-            LOGGER.info("Deleting any existing Topics with name: {}", TOPIC);
-            client.deleteTopics(Collections.singleton(TOPIC)).all().get();
+            if (client.listTopics().names().get().contains(TOPIC)) {
+                LOGGER.info("Deleting any existing Topics with name: {}", TOPIC);
+                client.deleteTopics(Collections.singleton(TOPIC)).all().get();
+            }
 
             Thread.sleep(5000);
 

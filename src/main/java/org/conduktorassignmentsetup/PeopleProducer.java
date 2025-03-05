@@ -2,9 +2,7 @@ package org.conduktorassignmentsetup;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +35,7 @@ public class PeopleProducer {
 
     public Integer loadJsonAndSend() {
 
+        LOGGER.info("Loading JSON file");
         JsonNode peopleNode;
 
         try {
@@ -49,7 +48,8 @@ public class PeopleProducer {
             return 0;
         }
 
-        Integer uploadCount = 0;
+        final Integer[] uploadCount = {0};
+
         for (JsonNode personNode : peopleNode) {
 
             String person;
@@ -61,14 +61,26 @@ public class PeopleProducer {
                 continue;
             }
 
-            producer.send(new ProducerRecord<>(TOPIC, personNode.get("_id").asText(), person));
-            uploadCount++;
+            producer.send(new ProducerRecord<>(TOPIC, personNode.get("_id").asText(), person), new Callback() {
+                public void onCompletion(RecordMetadata recordMetadata, Exception e) {
+                    if (e == null) {
+                        LOGGER.info("Received new metadata. \n" +
+                                "Topic:" + recordMetadata.topic() + "\n" +
+                                "Partition: " + recordMetadata.partition() + "\n" +
+                                "Offset: " + recordMetadata.offset() + "\n" +
+                                "Timestamp: " + recordMetadata.timestamp());
+                        uploadCount[0]++;
+                    } else {
+                        LOGGER.error("Error while producing", e);
+                    }
+                }
+            });
+
         }
 
         producer.flush();
-
         producer.close();
 
-        return uploadCount;
+        return uploadCount[0];
     }
 }
