@@ -67,6 +67,8 @@ public class PeopleProducer {
 
         producer.flush();
 
+        producer.close();
+
         return uploadCount;
     }
 }
