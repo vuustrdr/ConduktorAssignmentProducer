@@ -35,6 +35,7 @@ public class PeopleTopicCreator {
                 client.deleteTopics(Collections.singleton(TOPIC)).all().get();
             }
 
+            // Had some issues here with async here so adding sleep to fix that
             Thread.sleep(5000);
 
             LOGGER.info("Creating new Topic: {}", TOPIC);

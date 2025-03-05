@@ -50,6 +50,7 @@ public class PeopleProducer {
 
         final Integer[] uploadCount = {0};
 
+        LOGGER.info("Sending records to Kafka on Topic {}", TOPIC);
         for (JsonNode personNode : peopleNode) {
 
             String person;
@@ -80,6 +81,8 @@ public class PeopleProducer {
 
         producer.flush();
         producer.close();
+
+        LOGGER.info("Producer flushed and closed");
 
         return uploadCount[0];
     }
